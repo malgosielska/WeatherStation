@@ -1,0 +1,9 @@
+Wroclaw     THP
+Swidnica    THP
+Olesnica    THP
+Strzelin    THP
+Olawa       T
+Walbrzych   H
+Lubin       P
+Legnica     TP
+Zgorzelec   THP
