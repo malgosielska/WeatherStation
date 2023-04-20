@@ -1,10 +1,14 @@
 package com.company.observable;
+
 import com.company.Locations;
 import com.company.Measurements;
 import com.company.observer.KUPA;
 import com.company.observer.Observer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 public class CSI implements Observable {
 
@@ -12,23 +16,23 @@ public class CSI implements Observable {
     private final Thread thread;
     private final Object usersSemaphore = new Object();
     private final Locations locations = new Locations();
-    private final Map<String, ArrayList<Observer> > subscribersOfLocation = new HashMap<>();
+    private final Map<String, ArrayList<Observer>> locationToSubscribers = new HashMap<>();
+    private final Random random = new Random();
 
     public CSI() {
-
-        thread = new Thread(() -> runInternal());
+        thread = new Thread(this::runInternal);
         addLocations();
-
     }
 
     @Override
     public void update() {
         synchronized (usersSemaphore) {
-            for (String loc : subscribersOfLocation.keySet()){
-                Measurements lastMeasure = measure(loc);
-                if (subscribersOfLocation.get(loc).size() != 0){
-                    for (Observer observer : subscribersOfLocation.get(loc)){
-                        observer.sendNotification(loc, lastMeasure);
+            for (String location : locationToSubscribers.keySet()) {
+                Measurements lastMeasurement = measure(location);
+                ArrayList<Observer> currentSubscribers = locationToSubscribers.get(location);
+                if (currentSubscribers.size() != 0) {
+                    for (Observer subscriber : currentSubscribers) {
+                        subscriber.sendNotification(location, lastMeasurement);
                     }
                 }
             }
@@ -36,10 +40,8 @@ public class CSI implements Observable {
     }
 
     public void runInternal() {
-        while(shouldContinue) {
-
+        while (shouldContinue) {
             update();
-
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
@@ -48,58 +50,47 @@ public class CSI implements Observable {
         }
     }
 
-    public double measureTemp(){
-
-        Random random = new Random();
+    public double measureTemp() {
         return random.nextDouble(1, 30);
-
     }
 
-    public double measureHumidity(){
-
-        Random random = new Random();
+    public double measureHumidity() {
         return random.nextDouble(1, 100);
-
     }
 
-    public double measurePressure(){
-
-        Random random = new Random();
+    public double measurePressure() {
         return random.nextDouble(990, 1200);
-
     }
 
-    public Measurements measure(String location){
-
+    public Measurements measure(String location) {
         double lastTemp = 0;
         double lastHumidity = 0;
         double lastPressure = 0;
 
-        if (getLocations().getLocWithParameters().get(location).get(0)){
-           lastTemp = measureTemp();
+        if (getLocations().doesMeasureASpecificMeasurement(location, "temp")) {
+            lastTemp = measureTemp();
         }
-        if (getLocations().getLocWithParameters().get(location).get(1)) {
+        if (getLocations().doesMeasureASpecificMeasurement(location, "hum")) {
             lastHumidity = measureHumidity();
         }
-        if (getLocations().getLocWithParameters().get(location).get(2)){
+        if (getLocations().doesMeasureASpecificMeasurement(location, "press")) {
             lastPressure = measurePressure();
         }
         return new Measurements(lastTemp, lastHumidity, lastPressure);
-
     }
 
     @Override
-    public void register(KUPA kupa, String location) {
+    public void register(KUPA user, String location) {
         synchronized (usersSemaphore) {
-            subscribersOfLocation.get(location).add(kupa);
+            locationToSubscribers.get(location).add(user);
             System.out.println("You've subscribed this location: " + location.toUpperCase());
         }
     }
 
     @Override
-    public void remove(KUPA kupa, String location) {
+    public void remove(KUPA user, String location) {
         synchronized (usersSemaphore) {
-            subscribersOfLocation.get(location).remove(kupa);
+            locationToSubscribers.get(location).remove(user);
             System.out.println("You've unsubscribed this location: " + location.toUpperCase());
         }
     }
@@ -120,9 +111,9 @@ public class CSI implements Observable {
         }
     }
 
-    public void addLocations(){
-        for (String loc : locations.getLocWithParameters().keySet()){
-            subscribersOfLocation.put(loc, new ArrayList<>());
+    public void addLocations() {
+        for (String loc : locations.getLocationToParameters().keySet()) {
+            locationToSubscribers.put(loc, new ArrayList<>());
         }
     }
 
@@ -130,8 +121,8 @@ public class CSI implements Observable {
         return locations;
     }
 
-    public Map<String, ArrayList<Observer>> getSubscribersOfLocation() {
-        return subscribersOfLocation;
+    public Map<String, ArrayList<Observer>> getLocationToSubscribers() {
+        return locationToSubscribers;
     }
 
     public boolean getShouldContinue() {

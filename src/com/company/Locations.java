@@ -11,54 +11,55 @@ import java.util.Map;
 
 public class Locations {
 
-    private Map<String, ArrayList<Boolean>> locWithParameters = new HashMap<>();
-    private ArrayList<String> locationsList;
+    private final Map<String, ArrayList<Boolean>> locationToParameters = new HashMap<>();
+    private final ArrayList<String> locationsList;
 
-    public Locations(){
+    public Locations() {
         locationsList = new ArrayList<>();
         readLocations();
     }
 
-    public void readLocations(){
+    public void readLocations() {
+        int LOC_INDEX = 0;
+        int PARAMETERS_INDEX = 1;
         File file = new File("locations.txt");
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))){
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String input;
-            while((input = reader.readLine())!=null){
-                String [] tokens = input.split("\\s+");
-                locWithParameters.put(tokens[0], new ArrayList<>());
-                String measureList = tokens[1];
-                if (measureList.contains("T")){
-                    locWithParameters.get(tokens[0]).add(true);
-                } else {
-                    locWithParameters.get(tokens[0]).add(false);
-                }
-                if (measureList.contains("H")){
-                    locWithParameters.get(tokens[0]).add(true);
-                } else {
-                    locWithParameters.get(tokens[0]).add(false);
-                }
-                if (measureList.contains("P")){
-                    locWithParameters.get(tokens[0]).add(true);
-                } else {
-                    locWithParameters.get(tokens[0]).add(false);
-                }
+            while ((input = reader.readLine()) != null) {
+                String[] elements = input.split("\\s+");
+                String currentLocation = elements[LOC_INDEX];
+                String letters = elements[PARAMETERS_INDEX];
+                ArrayList<Boolean> parameters = new ArrayList<>();
+                parameters.add(letters.contains("T"));
+                parameters.add(letters.contains("H"));
+                parameters.add(letters.contains("P"));
+                locationToParameters.put(currentLocation, parameters);
             }
-            locationsList.addAll(locWithParameters.keySet());
-        } catch (IOException e){
+            locationsList.addAll(locationToParameters.keySet());
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void printLocations(){
+    public void printLocations() {
         int i = 1;
-        for (String location : locWithParameters.keySet()){
-            System.out.println(" - " + i  + " - to choose " + location);
+        for (String location : locationToParameters.keySet()) {
+            System.out.println(" - " + i + " - to choose " + location);
             i++;
         }
     }
 
-    public Map<String, ArrayList<Boolean>> getLocWithParameters() {
-        return locWithParameters;
+    public boolean doesMeasureASpecificMeasurement(String location, String measurement){
+        int index = switch (measurement) {
+            case "temp" -> 0;
+            case "hum" -> 1;
+            default -> 2;
+        };
+        return locationToParameters.get(location).get(index);
+    }
+
+    public Map<String, ArrayList<Boolean>> getLocationToParameters() {
+        return locationToParameters;
     }
 
     public List<String> getLocationsList() {

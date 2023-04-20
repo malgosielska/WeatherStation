@@ -1,6 +1,8 @@
 package com.company;
+
 import com.company.observable.CSI;
 import com.company.observer.KUPA;
+
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -12,15 +14,15 @@ public class Menu {
     private final CSI csi = new CSI();
     Scanner scanner = new Scanner(System.in);
 
-    public Menu(){
+    public Menu() {
         csi.startNotificationLoop();
     }
 
-    public void start(){
+    public void start() {
         startApp();
     }
 
-    public void startApp(){
+    public void startApp() {
         System.out.println("Enter: ");
         System.out.println(" - 1 - to sing up ");
         System.out.println(" - 2 - to log in ");
@@ -29,7 +31,7 @@ public class Menu {
         int choice = -1;
         try {
             choice = scanner.nextInt();
-        } catch (InputMismatchException e){
+        } catch (InputMismatchException e) {
             System.err.println("You cannot enter letters here");
         }
         scanner.nextLine();
@@ -79,7 +81,6 @@ public class Menu {
     }
 
     public void printMenu() {
-
         System.out.println("Enter: ");
         System.out.println(" - 1 - to subscribe a location");
         System.out.println(" - 2 - to print the collected data");
@@ -89,40 +90,64 @@ public class Menu {
         System.out.println(" - 6 - to unsubscribe a location");
         System.out.println(" - 0 - to log out");
         run();
+    }
 
+    public void subscribe() {
+        System.out.println("Enter:");
+        csi.getLocations().printLocations();
+        try {
+            int nr = scanner.nextInt();
+            scanner.nextLine();
+            if (nr <= csi.getLocations().getLocationToParameters().keySet().size() && nr > 0) {
+                String location = csi.getLocations().getLocationsList().get(nr - 1);
+                if (kupa.getSubscribedLocations().contains(location)) {
+                    System.out.println("You've already subscribed this location");
+                } else {
+                    csi.register(kupa, location);
+                    kupa.subscribe(location);
+                }
+            } else {
+                System.err.println("This location does not exist");
+            }
+        } catch (InputMismatchException e) {
+            System.err.println("You cannot enter letters here");
+        }
+    }
+
+    public void unsubscribe() {
+        System.out.println("Enter:");
+        csi.getLocations().printLocations();
+        try {
+            int nr = scanner.nextInt();
+            scanner.nextLine();
+            if (nr <= csi.getLocations().getLocationToParameters().size() && nr > 0) {
+                String location = csi.getLocations().getLocationsList().get(nr - 1);
+                if (csi.getLocationToSubscribers().get(location).size() != 0) {
+                    csi.remove(kupa, location);
+                    kupa.unsubscribe(location);
+                } else {
+                    System.err.println("You don't subscribe this location, so you cannot unsubscribe it");
+                }
+            } else {
+                System.err.println("This location does not exist");
+            }
+        } catch (InputMismatchException e) {
+            System.err.println("You cannot enter letters here");
+        }
     }
 
     public void run() {
         int choice = -1;
         try {
             choice = scanner.nextInt();
-        } catch (InputMismatchException e){
+        } catch (InputMismatchException e) {
             System.err.println("You cannot enter letters here");
         }
         scanner.nextLine();
 
-
         switch (choice) {
             case 1 -> {
-                System.out.println("Enter:");
-                csi.getLocations().printLocations();
-                try {
-                    int nr = scanner.nextInt();
-                    scanner.nextLine();
-                    if (nr <= csi.getLocations().getLocWithParameters().keySet().size() && nr > 0) {
-                        String location = csi.getLocations().getLocationsList().get(nr - 1);
-                        if (kupa.getSubscribedLocations().contains(location)) {
-                            System.out.println("You've already subscribed this location");
-                        } else {
-                            csi.register(kupa, location);
-                            kupa.subscribe(location);
-                        }
-                    } else {
-                        System.err.println("This location does not exist");
-                    }
-                } catch (InputMismatchException e) {
-                    System.err.println("You cannot enter letters here");
-                }
+                subscribe();
                 printMenu();
             }
             case 2 -> {
@@ -142,27 +167,8 @@ public class Menu {
                 printMenu();
             }
             case 6 -> {
-                System.out.println("Enter:");
-                csi.getLocations().printLocations();
-                try {
-                    int nr = scanner.nextInt();
-                    scanner.nextLine();
-                    if (nr <= csi.getLocations().getLocWithParameters().size() && nr > 0) {
-                        String location = csi.getLocations().getLocationsList().get(nr - 1);
-                        if (csi.getSubscribersOfLocation().get(location).size() != 0) {
-                            csi.remove(kupa, location);
-                            kupa.unsubscribe(location);
-                        } else {
-                            System.err.println("You don't subscribe this location, so you cannot unsubscribe it");
-                        }
-                    } else {
-                        System.err.println("This location does not exist");
-                    }
-                } catch (InputMismatchException e) {
-                    System.err.println("You cannot enter letters here");
-                } finally {
-                    printMenu();
-                }
+                unsubscribe();
+                printMenu();
             }
             case 0 -> {
                 System.out.println("Thank you for using my app");

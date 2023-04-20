@@ -49,8 +49,8 @@ public class CSITest {
 
         testSubscribersOfLocation.get(wroclaw).add(observer);
         csi.register(observer, wroclaw);
-        Assert.assertTrue(testSubscribersOfLocation.get(wroclaw).containsAll(csi.getSubscribersOfLocation().get(wroclaw)));
-        Assert.assertTrue(csi.getSubscribersOfLocation().get(wroclaw).containsAll(testSubscribersOfLocation.get(wroclaw)));
+        Assert.assertTrue(testSubscribersOfLocation.get(wroclaw).containsAll(csi.getLocationToSubscribers().get(wroclaw)));
+        Assert.assertTrue(csi.getLocationToSubscribers().get(wroclaw).containsAll(testSubscribersOfLocation.get(wroclaw)));
 
     }
 
@@ -60,20 +60,20 @@ public class CSITest {
         shouldAddUser();
         testSubscribersOfLocation.get(wroclaw).remove(observer);
         csi.remove(observer, wroclaw);
-        Assert.assertTrue(testSubscribersOfLocation.get(wroclaw).containsAll(csi.getSubscribersOfLocation().get(wroclaw)));
-        Assert.assertTrue(csi.getSubscribersOfLocation().get(wroclaw).containsAll(testSubscribersOfLocation.get(wroclaw)));
+        Assert.assertTrue(testSubscribersOfLocation.get(wroclaw).containsAll(csi.getLocationToSubscribers().get(wroclaw)));
+        Assert.assertTrue(csi.getLocationToSubscribers().get(wroclaw).containsAll(testSubscribersOfLocation.get(wroclaw)));
 
     }
 
     @Test
-    public void shouldChangeToFalse(){
-
+    public void shouldChangeToFalse() {
         csi.stopNotifications();
         Assert.assertNotEquals(csi.getShouldContinue(), testShouldContinue);
-
+    }
+    @Test
+    public void shouldChangeToFalseAndBeEqual(){
         testShouldContinue = false;
         csi.stopNotifications();
         Assert.assertEquals(csi.getShouldContinue(), testShouldContinue);
-
     }
 }
