@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 
 import java.util.*;
 
+// KUPA - Katalog Uniwersalnych Pomiarow Asynchronicznych 
+
 public class KUPA implements Observer {
 
     private TreeSet<String> subscribedLocations = new TreeSet<>();
